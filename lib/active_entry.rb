@@ -1,5 +1,6 @@
 require "active_entry/version"
 require "active_entry/errors"
+require "active_entry/controller_methods"
 require "active_entry/railtie" if defined? Rails::Railtie
 
 module ActiveEntry

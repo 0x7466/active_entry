@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    active_entry (1.0.0)
+    active_entry (1.0.1)
       rails (>= 4.0.0)
 
 GEM
