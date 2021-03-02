@@ -9,3 +9,4 @@
 /spec/dummy/storage/
 /spec/dummy/tmp/
 .byebug_history
+*.gem
