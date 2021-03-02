@@ -3,22 +3,21 @@ require_relative "lib/active_entry/version"
 Gem::Specification.new do |spec|
   spec.name        = "active_entry"
   spec.version     = ActiveEntry::VERSION
-  spec.authors     = ["tobiasfeistmantl"]
-  spec.email       = ["tobias@feistmantl.io"]
-  spec.homepage    = "TODO"
-  spec.summary     = "TODO: Summary of ActiveEntry."
-  spec.description = "TODO: Description of ActiveEntry."
+  spec.authors     = ["TFM Agency GmbH", "Tobias Feistmantl"]
+  spec.email       = ["hello@tfm.agency"]
+  spec.homepage    = "https://github.com/TFM-Agency/active_entry"
+  spec.summary     = "An easy and flexible access control system for your Rails app."
+  spec.description = "An easy and flexible access control system. No need for policies, abilities, etc. Do authentication and authorization directly in your controller."
   spec.license     = "MIT"
 
-  # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
-  # to allow pushing to a single host or delete this section to allow pushing to any host.
-  spec.metadata["allowed_push_host"] = "TODO: Set to 'http://mygemserver.com'"
-
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "TODO: Put your gem's public repo URL here."
-  spec.metadata["changelog_uri"] = "TODO: Put your gem's CHANGELOG.md URL here."
+  spec.metadata["source_code_uri"] = "https://github.com/TFM-Agency/active_entry"
+  spec.metadata["changelog_uri"] = "https://github.com/TFM-Agency/active_entry/commits/main"
 
   spec.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
 
-  spec.add_dependency "rails", "~> 6.1.3"
+  spec.add_dependency "rails", ">= 4.0.0"
+
+  spec.add_development_dependency "rspec-rails"
+  spec.add_development_dependency "guard-rspec"
 end
