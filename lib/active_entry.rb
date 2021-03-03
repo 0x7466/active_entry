@@ -6,18 +6,29 @@ require "active_entry/railtie" if defined? Rails::Railtie
 module ActiveEntry
   # Authenticates the user
   def authenticate!
+    general_decision_maker_method_name = :authenticated?
+    scoped_decision_maker_method_name = [action_name, :authenticated?].join("_").to_sym
+
+    general_decision_maker_defined = respond_to? general_decision_maker_method_name, true
+    scoped_decision_maker_defined = respond_to? scoped_decision_maker_method_name, true
+
+    # Check if a scoped decision maker method is defined and use it over
+    # general decision maker method.
+    decision_maker_to_use = scoped_decision_maker_defined ? scoped_decision_maker_method_name : general_decision_maker_method_name
+
     # Raise an error if the #authenticate? action isn't defined.
     #
     # This ensures that you actually do authentication in your controller.
-    raise ActiveEntry::AuthenticationNotPerformedError unless defined?(authenticated?)
+    if !scoped_decision_maker_defined && !general_decision_maker_defined 
+      raise ActiveEntry::AuthenticationNotPerformedError
+    end
     
     error = {}
-    is_authenticated = nil
 
-    if method(:authenticated?).arity > 0
-      is_authenticated = authenticated?(error)
+    if method(decision_maker_to_use).arity > 0
+      is_authenticated = send decision_maker_to_use, error
     else
-      is_authenticated = authenticated?
+      is_authenticated = send decision_maker_to_use
     end
     
     # If the authenticated? method returns not true
@@ -30,18 +41,29 @@ module ActiveEntry
   
   # Authorizes the user.
   def authorize!
+    general_decision_maker_method_name = :authorized?
+    scoped_decision_maker_method_name = [action_name, :authorized?].join("_").to_sym
+
+    general_decision_maker_defined = respond_to? general_decision_maker_method_name, true
+    scoped_decision_maker_defined = respond_to? scoped_decision_maker_method_name, true
+
+    # Check if a scoped decision maker method is defined and use it over
+    # general decision maker method.
+    decision_maker_to_use = scoped_decision_maker_defined ? scoped_decision_maker_method_name : general_decision_maker_method_name
+
     # Raise an error if the #authorize? action isn't defined.
     #
     # This ensures that you actually do authorization in your controller. 
-    raise ActiveEntry::AuthorizationNotPerformedError unless defined?(authorized?)
+    if !scoped_decision_maker_defined && !general_decision_maker_defined 
+      raise ActiveEntry::AuthorizationNotPerformedError
+    end
     
     error = {}
-    is_authorized = nil
 
-    if method(:authorized?).arity > 0
-      is_authorized = authorized?(error)
+    if method(decision_maker_to_use).arity > 0
+      is_authorized = send(decision_maker_to_use, error)
     else
-      is_authorized = authorized?
+      is_authorized = send(decision_maker_to_use)
     end
 
     # If the authorized? method does not return true

@@ -3,21 +3,24 @@ require "rails_helper"
 describe "Authentication" do
   let(:dummy_class) { Class.new { include ActiveEntry } }
 
+  before { dummy_class.define_method(:index) {} }
+  before { dummy_class.define_method(:action_name) { "index" } }
+
   it 'raises `AuthenticationNotPerformedError` if #authenticated? is not defined' do
     expect{ dummy_class.new.authenticate! }.to raise_error ActiveEntry::AuthenticationNotPerformedError
   end
 
-  it 'raises `NotAuthenticatedError` if #authenticated? returns false' do
+  it 'raises `NotAuthenticatedError` if #authenticated? is false' do
     dummy_class.class_eval { def authenticated?; false; end }
     expect{ dummy_class.new.authenticate! }.to raise_error ActiveEntry::NotAuthenticatedError
   end
 
-  it 'raises `NotAuthenticatedError` if #authenticated? with argument returns false' do
+  it 'raises `NotAuthenticatedError` if #authenticated? with argument is false' do
     dummy_class.class_eval { def authenticated?(error); false; end }
     expect{ dummy_class.new.authenticate! }.to raise_error ActiveEntry::NotAuthenticatedError
   end
 
-  it 'raises `NotAuthenticatedError` if #authenticated? with argument and custom error returns false' do
+  it 'raises `NotAuthenticatedError` if #authenticated? with argument and custom error is false' do
     dummy_class.class_eval do
       def authenticated?(error)
         error[:code] = "DEMO_CODE"
@@ -37,13 +40,37 @@ describe "Authentication" do
     end
   end
 
-  it 'raises no exception if #authenticated? returns true' do
-    dummy_class.class_eval { def authenticated?; true; end }
+  it 'does not raise error if #authenticated? is true' do
+    dummy_class.define_method(:authenticated?) { true }
     expect{ dummy_class.new.authenticate! }.to_not raise_error
   end
 
-  it 'raises no exception if #authenticated? with argument returns true' do
+  it 'does not raise error if #authenticated? with argument is true' do
     dummy_class.class_eval { def authenticated?(error); true; end }
     expect{ dummy_class.new.authenticate! }.to_not raise_error
+  end
+
+  describe "scoped authenticated?" do
+    it 'raises `NotAuthenticatedError` if #index_authenticated? is false' do
+      dummy_class.define_method(:index_authenticated?) { false }
+      expect{ dummy_class.new.authenticate! }.to raise_error ActiveEntry::NotAuthenticatedError
+    end
+
+    it 'raises `NotAuthenticatedError` if #index_authenticated? is false but #authenticated? is true' do
+      dummy_class.define_method(:index_authenticated?) { false }
+      dummy_class.define_method(:authenticated?) { true }
+      expect{ dummy_class.new.authenticate! }.to raise_error ActiveEntry::NotAuthenticatedError
+    end
+
+    it 'does not raise error if #index_authenticated? returns true' do
+      dummy_class.define_method(:index_authenticated?) { true }
+      expect{ dummy_class.new.authenticate! }.to_not raise_error
+    end
+
+    it 'has precendence over #authenticated?' do
+      dummy_class.define_method(:index_authenticated?) { true }
+      dummy_class.define_method(:authenticated?) { false }
+      expect{ dummy_class.new.authenticate! }.to_not raise_error
+    end
   end
 end
