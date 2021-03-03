@@ -53,8 +53,10 @@ end
 
 Active Entry expects boolean return values from `authenticated?` and `authorized?`. `true` signals successful authentication/authorization, everything else not.
 
+### Rescuing from errors
+
 If the user is signed in, he is authenticated and authorized if he is an admin, otherwise an `ActiveEntry::NotAuthenticatedError` or `ActiveEntry::NotAuthorizedError` will be raised.
-Now you just have to catch this error and react accordingly. Rails has the convinient `rescue_from` for that.
+Now you just have to catch this error and react accordingly. Rails has the convenient `rescue_from` for that.
 
 ```ruby
 class ApplicationController < ActionController::Base
@@ -78,6 +80,32 @@ end
 ```
 
 In this example above, the user will be redirected with a flash message. But you can do whatever you want. For example logging.
+
+### Scoped decision makers
+
+Instead of putting all authentication/authorization logic into `authenticated?` and `authorized?` you can create scoped decision makers:
+
+```ruby
+class DashboardController < ApplicationController
+  before_action :authenticate!, :authorize!
+
+  def index_authenticated?
+    # Do your authentication for the index action only
+  end
+  def index_authorized?
+    # Do your authorization for the index action only
+  end
+  def index
+    # Actual action
+  end
+end
+```
+
+This puts authentication/authorization logic a lot closer to the actual action that is performed and you don't get lost in endlessly long `authenticated?` or `authorized?` decision maker methods.
+
+**Note:** The scoped authentication/authorization decision maker methods take precendence over the general ones. That means if you have an `index_authenticated?` for your index action defined, the general `authenticated?` gets ignored.
+
+### Controller helper methods
 
 Active Entry also has a few helper methods which help you to distinguish between controller actions. You can check if a specific action got called, by adding `_action?` to the action name in your `authenticated?` or `authorized?`.
 For an action `show` this would be `show_action?`.
