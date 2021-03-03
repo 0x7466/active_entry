@@ -1,6 +1,6 @@
 [<img src="active_entry_logo.png" alt="Active Entry Logo" width="250px"/>](https://github.com/TFM-Agency/active_entry)
 
-# Active Entry - Simple and flexible authentication and authorization
+# Active Entry - Simple and flexible authentication and authorization [![Ruby](https://github.com/TFM-Agency/active_entry/actions/workflows/ci-rspec.yml/badge.svg)](https://github.com/TFM-Agency/active_entry/actions/workflows/ci-rspec.yml)
 
 Active Entry is a simple and secure authentication and authorization system for your Rails application, which lets you to authenticate and authorize directly in your controllers.
 
