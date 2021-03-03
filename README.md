@@ -79,9 +79,12 @@ end
 
 In this example above, the user will be redirected with a flash message. But you can do whatever you want. For example logging.
 
-Active Entry also has a few helper methods which help you to distinguish between RESTful controller actions.
+Active Entry also has a few helper methods which help you to distinguish between controller actions. You can check if a specific action got called, by adding `_action?` to the action name in your `authenticated?` or `authorized?`.
+For an action `show` this would be `show_action?`.
 
-The following methods are available:
+**Note:** A `NoMethodError` gets raised if you try to call `_action?` if the actual action hasn't been implemented. For example `missing_implementation_action?` raises an error as long as `#missing_implementation` hasn't been implemented as action.
+
+The are some more helpers that check for more than one RESTful action:
 
  * `read_action?` - If the called action just read. Actions: `index`, `show`
  * `write_action?` - If the called action writes something. Actions: `new`, `create`, `edit`, `update`, `destroy`
@@ -89,15 +92,32 @@ The following methods are available:
  * `create_action?` - If something will be created. Actions: `new`, `create`
  * `update_action?` - If something will be updated. Actions: `edit`, `update`
  * `destroy_action?` - If something will be destroyed. Action: `destroy`
+ * `delete_action?` - Alias for `destroy_action?`. Action: `destroy`
 
 So you can for example do:
 
 ```ruby
-def authorized?
-  return true if read_action?    # Everybody is authorized to call read actions
+class ApplicationController < ActionController::Base
+  # ...
 
-  if write_action?
-    return true if admin_signed_in?		# Just admins are allowed to call write actions
+  def show
+  end
+
+  def custom
+  end
+
+  private
+
+  def authorized?
+    return true if read_action?    # Everybody is authorized to call read actions
+
+    if write_action?
+      return true if admin_signed_in?		# Just admins are allowed to call write actions
+    end
+
+    if custom_action?   # For custom/non-RESTful actions
+      return true
+    end
   end
 end
 ```

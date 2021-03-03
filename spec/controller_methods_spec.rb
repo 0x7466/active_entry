@@ -3,6 +3,15 @@ require "spec_helper"
 describe "Controller methods" do
   let(:dummy_class) { Class.new { include ActiveEntry } }
 
+  # Define restful actions
+  before { dummy_class.define_method(:index) {} }
+  before { dummy_class.define_method(:new) {} }
+  before { dummy_class.define_method(:create) {} }
+  before { dummy_class.define_method(:show) {} }
+  before { dummy_class.define_method(:edit) {} }
+  before { dummy_class.define_method(:update) {} }
+  before { dummy_class.define_method(:destroy) {} }
+
   shared_examples "checker for action name" do |method_name, action_name, expectation|
     before { dummy_class.define_method(:action_name) { action_name.to_s } }
 
@@ -54,8 +63,10 @@ describe "Controller methods" do
   end
   
   describe "#index_action?" do
-    it "is defined" do
-      expect(dummy_class.new).to respond_to :index_action?
+    before { dummy_class.define_method(:action_name) { "index" } }
+
+    it "does not raise error" do
+      expect{ dummy_class.new.index_action? }.to_not raise_error
     end
     
     it_behaves_like "checker for action name", :index_action?, :index, true
@@ -66,8 +77,10 @@ describe "Controller methods" do
   end
   
   describe "#show_action?" do
-    it "is defined" do
-      expect(dummy_class.new).to respond_to :show_action?
+    before { dummy_class.define_method(:action_name) { "show" } }
+
+    it "does not raise error" do
+      expect{ dummy_class.new.show_action? }.to_not raise_error
     end
     
     it_behaves_like "checker for action name", :show_action?, :show, true
@@ -100,6 +113,34 @@ describe "Controller methods" do
     
     [:index, :new, :create, :show, :edit, :update].each do |action_name|
       it_behaves_like "checker for action name", :destroy_action?, action_name, false
+    end
+  end
+
+  describe "dynamic helper methods" do
+    let(:action_name) { "special_something" }
+
+    before { dummy_class.define_method(:action_name) { "special_something" } }
+
+    context "method to test is defined" do
+      before { dummy_class.define_method(action_name.to_sym) {} }
+
+      it "does not raise error for #special_something_action?" do
+        expect{ dummy_class.new.special_something_action? }.to_not raise_error
+      end
+
+      context "#action_name missing" do
+        before { dummy_class.remove_method(:action_name) }
+
+        it "raises NoMethodError" do
+          expect{ dummy_class.new.special_something_action? }.to raise_error NoMethodError
+        end
+      end
+    end
+
+    context "method to test is not defined" do
+      it "raises error for #special_something_action?" do
+        expect{ dummy_class.new.special_something_action? }.to raise_error NoMethodError
+      end
     end
   end
 end

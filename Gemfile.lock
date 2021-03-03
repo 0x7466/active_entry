@@ -72,6 +72,7 @@ GEM
     crass (1.0.6)
     diff-lcs (1.4.4)
     erubi (1.10.0)
+    ffaker (2.18.0)
     ffi (1.14.2)
     formatador (0.2.5)
     globalid (0.4.2)
@@ -194,6 +195,7 @@ PLATFORMS
 
 DEPENDENCIES
   active_entry!
+  ffaker
   guard-rspec
   pry
   rspec-rails

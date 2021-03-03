@@ -1,4 +1,4 @@
-require "spec_helper"
+require "rails_helper"
 
 describe "Authorization" do
   let(:dummy_class) { Class.new { include ActiveEntry } }

@@ -3,6 +3,20 @@
 # Helper methods for your controller
 # to identify RESTful actions.
 module ActiveEntry
+  def method_missing method_name, *args
+    method_name_str = method_name.to_s
+    
+    if methods.include?(:action_name) && method_name_str.include?("_action?")
+      method_name_str.slice! "_action?"
+      
+      if methods.include? method_name_str.to_sym
+        return method_name_str == action_name
+      end
+    end
+
+    super
+  end
+
   # @return [Boolean]
   #    True if the called action
   #    is a only-read action.
@@ -29,20 +43,6 @@ module ActiveEntry
     action_name == 'edit' ||
     action_name == 'update' ||
     action_name == 'destroy'
-  end
-
-  # @return [Boolean]
-  #    True if the called action
-  #    is the index action.
-  def index_action?
-    action_name == 'index'
-  end
-
-  # @return [Boolean]
-  #    True if the called action
-  #    is the show action.
-  def show_action?
-    action_name == 'show'
   end
 
   # @note
@@ -78,6 +78,5 @@ module ActiveEntry
   def destroy_action?
     action_name == 'destroy'
   end
-
   alias delete_action? destroy_action?
 end
