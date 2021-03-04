@@ -78,8 +78,8 @@ Now you just have to catch this error and react accordingly. Rails has the conve
 class ApplicationController < ActionController::Base
   # ...
 
-  rescue_from ActiveEntry::NotAuthenticatedError, with: :not_authenticated
-  rescue_from ActiveEntry::NotAuthorizedError, with: :not_authorized
+  rescue_from ActiveEntry::NotAuthenticatedError, with: :not_authenticated unless Rails.env.test?
+  rescue_from ActiveEntry::NotAuthorizedError, with: :not_authorized unless Rails.env.test?
 
   private
 
@@ -205,6 +205,60 @@ class ApplicationController < ActionController::Base
 
     if write_action?
       return true if admin_signed_in?		# Just admins are allowed to call write actions
+    end
+  end
+end
+```
+## Testing authentication and authorization
+If you check for the Rails environment with `unless Rails.env.test?` in your `rescue_from` statement you can easily test your authentication and authorization in your tests.
+
+```ruby
+class ApplicationController < ActionController::Base
+  # ...
+  rescue_from ActiveEntry::NotAuthenticatedError, with: :not_authenticated unless Rails.env.test?
+  rescue_from ActiveEntry::NotAuthorizedError, with: :not_authorized unless Rails.env.test?
+  # ...
+end
+```
+
+Now you can catch `ActiveEntry::NotAuthenticatedError` / `ActiveEntry::NotAuthorizedError` in your test site like this:
+
+```ruby
+require "rails_helper"
+
+RSpec.describe "Users", type: :request do
+  describe "Authentication" do
+    context "#index" do
+      context "authenticated" do
+        it "as signed in user" do
+          sign_in_as user
+          expect{ get users_path }.to_not raise_error ActiveEntry::NotAuthenticatedError
+        end
+      end
+
+      context "not authenticated" do
+        it "as stranger" do
+          expect{ get users_path }.to raise_error ActiveEntry::NotAuthenticatedError
+        end
+      end
+    end
+  end
+
+  describe "Authorization" do
+    context "#index" do
+      context "authorized" do
+        it "as admin" do
+          sign_in_as admin
+          expect{ get users_path }.to_not raise_error ActiveEntry::NotAuthorizedError
+        end
+      end
+
+      context "not authenticated" do
+        it "as non-admin" do
+          sign_in_as user
+          expect{ get users_path }.to raise_error ActiveEntry::NotAuthorizedError
+        end
+      end
     end
   end
 end
