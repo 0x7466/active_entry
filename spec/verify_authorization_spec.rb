@@ -24,6 +24,17 @@ describe "Authorization verification" do
     end.to_not raise_error
   end
   
+  it 'does not raise error if #authorize! was called but failed because not authorized' do
+    dummy_class.define_method(:authorized?) { false }
+
+    begin
+      dummy_obj.authorize!
+    rescue ActiveEntry::NotAuthorizedError
+    end
+
+    expect{ dummy_obj.verify_authorization! }.to_not raise_error
+  end
+  
   describe '#authorize!' do
     it "sets @_authorization_done" do
       dummy_class.define_method(:authorized?) { true }

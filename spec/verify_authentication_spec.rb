@@ -24,6 +24,17 @@ describe "Authentication verification" do
     end.to_not raise_error
   end
   
+  it 'does not raise error if #authenticate! was called but failed because not authenticated' do
+    dummy_class.define_method(:authenticated?) { false }
+
+    begin
+      dummy_obj.authenticate!
+    rescue ActiveEntry::NotAuthenticatedError
+    end
+
+    expect{ dummy_obj.verify_authentication! }.to_not raise_error
+  end
+  
   describe '#authenticate!' do
     it "sets @_authentication_done" do
       dummy_class.define_method(:authenticated?) { true }

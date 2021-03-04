@@ -35,6 +35,10 @@ module ActiveEntry
     else
       is_authenticated = send decision_maker_to_use
     end
+
+    # Tell #verify_authentication! that authentication
+    # has been performed.
+    @_authentication_done = true
     
     # If the authenticated? method returns not true
     # it raises the ActiveEntry::NotAuthenticatedError.
@@ -42,10 +46,6 @@ module ActiveEntry
     # Use the .rescue_from method from ActionController::Base
     # to catch the exception and show the user a proper error message.
     raise ActiveEntry::NotAuthenticatedError.new(error) unless is_authenticated == true
-
-    # Tell #verify_authentication! that authentication
-    # has been performed.
-    @_authentication_done = true
   end
 
   # Verifies that #authorize! has been called in the controller.
@@ -80,15 +80,15 @@ module ActiveEntry
       is_authorized = send(decision_maker_to_use)
     end
 
+    # Tell #verify_authorization! that authorization
+    # has been performed.
+    @_authorization_done = true
+
     # If the authorized? method does not return true
     # it raises the ActiveEntry::NotAuthorizedError
     #
     # Use the .rescue_from method from ActionController::Base
     # to catch the exception and show the user a proper error message.
     raise ActiveEntry::NotAuthorizedError.new(error) unless is_authorized == true
-
-    # Tell #verify_authorization! that authorization
-    # has been performed.
-    @_authorization_done = true
   end
 end
