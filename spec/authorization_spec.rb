@@ -6,8 +6,8 @@ describe "Authorization" do
   before { dummy_class.define_method(:index) {} }
   before { dummy_class.define_method(:action_name) { "index" } }
 
-  it 'raises `AuthorizationNotPerformedError` if #authorized? is not defined' do
-    expect{ dummy_class.new.authorize! }.to raise_error ActiveEntry::AuthorizationNotPerformedError
+  it 'raises `AuthorizationDecisionMakerMissingError` if #authorized? is not defined' do
+    expect{ dummy_class.new.authorize! }.to raise_error ActiveEntry::AuthorizationDecisionMakerMissingError
   end
 
   it 'raises `NotAuthorizedError` if #authorized? is false' do

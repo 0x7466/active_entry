@@ -6,8 +6,8 @@ describe "Authentication" do
   before { dummy_class.define_method(:index) {} }
   before { dummy_class.define_method(:action_name) { "index" } }
 
-  it 'raises `AuthenticationNotPerformedError` if #authenticated? is not defined' do
-    expect{ dummy_class.new.authenticate! }.to raise_error ActiveEntry::AuthenticationNotPerformedError
+  it 'raises `AuthenticationDecisionMakerMissingError` if #authenticated? is not defined' do
+    expect{ dummy_class.new.authenticate! }.to raise_error ActiveEntry::AuthenticationDecisionMakerMissingError
   end
 
   it 'raises `NotAuthenticatedError` if #authenticated? is false' do

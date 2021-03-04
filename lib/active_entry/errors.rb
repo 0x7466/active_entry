@@ -11,9 +11,17 @@ module ActiveEntry
   # Error for controllers in which authorization isn't handled.
   #
   # @raise [AuthorizationNotPerformedError]
-  #    if the #authorized? method isn't defined
+  #    if authorize! is not called
   #    in the controller class.
   class AuthorizationNotPerformedError < AuthorizationError
+  end
+
+  # Error for controllers in which authorization decision maker is missing.
+  #
+  # @raise [AuthorizationDecisionMakerMissingError]
+  #    if the #authorized? method isn't defined
+  #    in the controller class.
+  class AuthorizationDecisionMakerMissingError < AuthorizationError
   end
 
   # Error if user unauthorized.
@@ -43,9 +51,17 @@ module ActiveEntry
   # Error for controllers in which authentication isn't handled.
   #
   # @raise [AuthenticationNotPerformedError]
-  #    if the #authenticated? method isn't defined
+  #    if authenticate! is not called
   #    in the controller class.
   class AuthenticationNotPerformedError < AuthenticationError
+  end
+
+  # Error for controllers in which authentication decision maker is missing.
+  #
+  # @raise [AuthenticationDecisionMakerMissingError]
+  #    if the #authenticated? method isn't defined
+  #    in the controller class.
+  class AuthenticationDecisionMakerMissingError < AuthenticationError
   end
 
   # Error if user not authenticated

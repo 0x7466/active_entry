@@ -23,16 +23,29 @@ $ gem install active_entry
 
 ## Usage
 With Active Entry authentication and authorization is done in your Rails controllers. To enable authentication and authorization in one of your controllers, just add a before action for `authenticate!` and `authorize!` and the user has to authenticate and authorize on every call.
-You probably want to control authentication and authorization for every controller action you have in your app. To enable this, just add the before action to the `ApplicationController`.
+
+### Verify authentication and authorization
+You probably want to control authentication and authorization for every controller action you have in your app. As a safeguard to ensure, that auth is performed in every controller and the call for auth is not forgotten in development, add the `#verify_authentication!` and `#verify_authorization` as after action callbacks to your `ApplicationController`.
 
 ```ruby
 class ApplicationController < ActionController::Base
+  before_action :verify_authentication!, :verify_authorization!
+  # ...
+end
+```
+This ensures, that you call `authenticate!` and/or `authorize!` in all your controllers and raises an `ActiveEntry::AuthenticationNotPerformedError` / `ActiveEntry::AuthorizationNotPerformedError` if not.
+
+### Perform authentication and authorization
+in order to do the actual authentication and authorization, you have to add `authenticate!` and `authorize!` as before action callback in your controllers.
+
+```ruby
+class DashboardController < ApplicationController
   before_action :authenticate!, :authorize!
   # ...
 end
 ```
 
-If you try to open a page, you will get an `ActiveEntry::AuthenticationNotPerformedError` or `ActiveEntry::AuthorizationNotPerformedError`. This means that you have to instruct Active Entry when a user is authenticated/authorized and when not.
+If you try to open a page, you will get an `ActiveEntry::AuthenticationDecisionMakerMissingError` or `ActiveEntry::AuthorizationDecisionMakerMissingError`. This means that you have to instruct Active Entry when a user is authenticated/authorized and when not.
 You can do this by defining the methods `authenticated?` and `authorized?` in your controller.
 
 ```ruby
@@ -190,31 +203,6 @@ class ApplicationController < ActionController::Base
     if write_action?
       return true if admin_signed_in?		# Just admins are allowed to call write actions
     end
-  end
-end
-```
-
-## Known Issues
-The authentication/authorization is done in a before action. These Rails controller before callbacks are done in defined order. If you set an instance variable which is needed in the `authenticated?` or `authorized?` method, you have to call the before action after the other method again.
-
-For example if you set `@user` in your controller in the `set_user` before action and you want to use the variable in `authorized?` action, you have to add the `authenticate!` or `authorize!` method after the `set_user` again, otherwise `@user` won't be available in `authenticate!` or `authorized?` yet.
-
-```ruby
-class UsersController < ApplicationController
-  before_action :set_user
-  before_action :authenticate!, :authorize!
-
-  def show
-  end
-
-  private
-
-  def authenticated?
-    return true if user_signed_in?
-  end
-
-  def authorized?
-    return true if current_user == @user
   end
 end
 ```

@@ -4,6 +4,11 @@ require "active_entry/controller_methods"
 require "active_entry/railtie" if defined? Rails::Railtie
 
 module ActiveEntry
+  # Verifies that #authenticate! has been called in the controller.
+  def verify_authentication!
+    raise ActiveEntry::AuthenticationNotPerformedError unless @_authentication_done == true
+  end
+
   # Authenticates the user
   def authenticate!
     general_decision_maker_method_name = :authenticated?
@@ -20,7 +25,7 @@ module ActiveEntry
     #
     # This ensures that you actually do authentication in your controller.
     if !scoped_decision_maker_defined && !general_decision_maker_defined 
-      raise ActiveEntry::AuthenticationNotPerformedError
+      raise ActiveEntry::AuthenticationDecisionMakerMissingError
     end
     
     error = {}
@@ -37,6 +42,15 @@ module ActiveEntry
     # Use the .rescue_from method from ActionController::Base
     # to catch the exception and show the user a proper error message.
     raise ActiveEntry::NotAuthenticatedError.new(error) unless is_authenticated == true
+
+    # Tell #verify_authentication! that authentication
+    # has been performed.
+    @_authentication_done = true
+  end
+
+  # Verifies that #authorize! has been called in the controller.
+  def verify_authorization!
+    raise ActiveEntry::AuthorizationNotPerformedError unless @_authorization_done == true
   end
   
   # Authorizes the user.
@@ -55,7 +69,7 @@ module ActiveEntry
     #
     # This ensures that you actually do authorization in your controller. 
     if !scoped_decision_maker_defined && !general_decision_maker_defined 
-      raise ActiveEntry::AuthorizationNotPerformedError
+      raise ActiveEntry::AuthorizationDecisionMakerMissingError
     end
     
     error = {}
@@ -72,5 +86,9 @@ module ActiveEntry
     # Use the .rescue_from method from ActionController::Base
     # to catch the exception and show the user a proper error message.
     raise ActiveEntry::NotAuthorizedError.new(error) unless is_authorized == true
+
+    # Tell #verify_authorization! that authorization
+    # has been performed.
+    @_authorization_done = true
   end
 end
