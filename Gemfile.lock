@@ -203,9 +203,11 @@ GEM
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
     victor (0.2.8)
+    webrick (1.7.0)
     websocket-driver (0.7.3)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
+    yard (0.9.26)
     zeitwerk (2.4.2)
 
 PLATFORMS
@@ -220,6 +222,8 @@ DEPENDENCIES
   simplecov
   simplecov-small-badge!
   sqlite3
+  webrick
+  yard
 
 BUNDLED WITH
    2.2.12

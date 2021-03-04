@@ -6,6 +6,8 @@ gemspec
 
 group :development do
   gem 'sqlite3'
+  gem 'webrick', require: false
+  gem 'yard', require: false
 end
 
 group :test do

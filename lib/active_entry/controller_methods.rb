@@ -3,6 +3,7 @@
 # Helper methods for your controller
 # to identify RESTful actions.
 module ActiveEntry
+  # @!visibility private
   def method_missing method_name, *args
     method_name_str = method_name.to_s
     
