@@ -29,14 +29,12 @@ class ScopedDecisionMakerTestController < ApplicationController
     return false
   end
   def non_authenticated
-    head :no_content
   end
 
   def non_authorized_authorized?
     return false
   end
   def non_authorized
-    head :no_content
   end
 
   private

@@ -31,7 +31,6 @@ describe "Authorization" do
 
     begin
       dummy_class.new.authorize!
-      expect(false).to be true  # Don't get to this point!
     rescue ActiveEntry::NotAuthorizedError => e
       error = e.error
 

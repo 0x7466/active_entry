@@ -31,7 +31,6 @@ describe "Authentication" do
 
     begin
       dummy_class.new.authenticate!
-      expect(false).to be true  # Don't get to this point!
     rescue ActiveEntry::NotAuthenticatedError => e
       error = e.error
 

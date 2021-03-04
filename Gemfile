@@ -8,5 +8,13 @@ group :development do
   gem 'sqlite3'
 end
 
+group :test do
+  gem 'simplecov', require: false
+end
+
+group :development, :test do
+  gem 'simplecov-small-badge', github: "TFM-Agency/simplecov-small-badge", require: false
+end
+
 # To use a debugger
 # gem 'byebug', group: [:development, :test]

@@ -1,4 +1,4 @@
-require "spec_helper"
+require "rails_helper"
 
 describe "Controller methods" do
   let(:dummy_class) { Class.new { include ActiveEntry } }
@@ -73,6 +73,22 @@ describe "Controller methods" do
     
     [:new, :create, :show, :edit, :update, :destroy].each do |action_name|
       it_behaves_like "checker for action name", :index_action?, action_name, false
+    end
+  end
+  
+  describe "#create_action?" do
+    before { dummy_class.define_method(:action_name) { "create" } }
+
+    it "does not raise error" do
+      expect{ dummy_class.new.create_action? }.to_not raise_error
+    end
+    
+    [:new, :create].each do |action_name|
+      it_behaves_like "checker for action name", :create_action?, action_name, true
+    end
+    
+    [:index, :show, :edit, :update, :destroy].each do |action_name|
+      it_behaves_like "checker for action name", :create_action?, action_name, false
     end
   end
   
