@@ -9,7 +9,7 @@ GIT
 PATH
   remote: .
   specs:
-    active_entry (1.2.3)
+    active_entry (1.2.4)
       rails (>= 4.0.0)
 
 GEM
