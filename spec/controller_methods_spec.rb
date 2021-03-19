@@ -131,6 +131,39 @@ describe "Controller methods" do
       it_behaves_like "checker for action name", :destroy_action?, action_name, false
     end
   end
+  
+  describe "#collection_action?" do
+    it "is defined" do
+      expect(dummy_class.new).to respond_to :collection_action?
+    end
+    
+    [:index, :new, :create].each do |action_name|
+      it_behaves_like "checker for action name", :collection_action?, action_name, true
+    end
+    
+    [:show, :edit, :update, :destroy].each do |action_name|
+      it_behaves_like "checker for action name", :collection_action?, action_name, false
+    end
+  end
+  
+  describe "#member_action?" do
+    it "is defined" do
+      expect(dummy_class.new).to respond_to :member_action?
+    end
+    
+    [:show, :edit, :update, :destroy].each do |action_name|
+      it_behaves_like "checker for action name", :member_action?, action_name, true
+    end
+    
+    [:index, :new, :create].each do |action_name|
+      it_behaves_like "checker for action name", :member_action?, action_name, false
+    end
+
+    context "custom actions" do
+      before { dummy_class.define_method(:action_name) { "custom" } }
+      it_behaves_like "checker for action name", :member_action?, :custom, true
+    end
+  end
 
   describe "dynamic helper methods" do
     let(:action_name) { "special_something" }

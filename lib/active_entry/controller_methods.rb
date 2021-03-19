@@ -80,4 +80,20 @@ module ActiveEntry
     action_name == 'destroy'
   end
   alias delete_action? destroy_action?
+
+  # @return [Boolean]
+  #    True if called action
+  #    is index, new or create.
+  def collection_action?
+    action_name == 'index' ||
+    action_name == 'new' ||
+    action_name == 'create'
+  end
+  
+  # @return [Boolean]
+  #    True if called action
+  #    is not a collection action.
+  def member_action?
+    !collection_action?
+  end
 end

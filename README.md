@@ -143,6 +143,8 @@ The are some more helpers that check for more than one RESTful action:
  * `update_action?` - If something will be updated. Actions: `edit`, `update`
  * `destroy_action?` - If something will be destroyed. Action: `destroy`
  * `delete_action?` - Alias for `destroy_action?`. Action: `destroy`
+ * `collection_action?` - If the called action is a collection action. Actions: `index`, `new`, `create`
+ * `member_action?` - Everything that is not a collection action. Including non-RESTful actions.
 
 So you can for example do:
 
