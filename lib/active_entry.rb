@@ -1,7 +1,8 @@
 require "active_entry/version"
 
-require "active_support/inflector"
+require_relative "../app/controllers/concerns/active_entry/concern" if defined?(ActionController::Base)
 
+require "active_support/inflector"
 
 
 module ActiveEntry
