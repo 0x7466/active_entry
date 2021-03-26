@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.email       = ["hello@tfm.agency"]
   spec.homepage    = "https://github.com/TFM-Agency/active_entry"
   spec.summary     = "An easy and flexible access control system for your Rails app."
-  spec.description = "An easy and flexible access control system. No need for policies, abilities, etc. Do authentication and authorization directly in your controller."
+  spec.description = "An easy and flexible access control system. Authentication and authorization before a method/action is executed."
   spec.license     = "MIT"
 
   spec.metadata["homepage_uri"] = spec.homepage

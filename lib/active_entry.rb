@@ -1,94 +1,144 @@
 require "active_entry/version"
-require "active_entry/errors"
-require "active_entry/controller_methods"
-require "active_entry/railtie" if defined? Rails::Railtie
+
+require "active_support/inflector"
+
+
 
 module ActiveEntry
-  # Verifies that #authenticate! has been called in the controller.
-  def verify_authentication!
-    raise ActiveEntry::AuthenticationNotPerformedError unless @_authentication_done == true
+  module Generators
   end
 
-  # Authenticates the user
-  def authenticate!
-    general_decision_maker_method_name = :authenticated?
-    scoped_decision_maker_method_name = [action_name, :authenticated?].join("_").to_sym
-
-    general_decision_maker_defined = respond_to? general_decision_maker_method_name, true
-    scoped_decision_maker_defined = respond_to? scoped_decision_maker_method_name, true
-
-    # Check if a scoped decision maker method is defined and use it over
-    # general decision maker method.
-    decision_maker_to_use = scoped_decision_maker_defined ? scoped_decision_maker_method_name : general_decision_maker_method_name
-
-    # Raise an error if the #authenticate? action isn't defined.
-    #
-    # This ensures that you actually do authentication in your controller.
-    if !scoped_decision_maker_defined && !general_decision_maker_defined 
-      raise ActiveEntry::AuthenticationDecisionMakerMissingError
-    end
-    
-    error = {}
-
-    if method(decision_maker_to_use).arity > 0
-      is_authenticated = send decision_maker_to_use, error
-    else
-      is_authenticated = send decision_maker_to_use
-    end
-
-    # Tell #verify_authentication! that authentication
-    # has been performed.
-    @_authentication_done = true
-    
-    # If the authenticated? method returns not true
-    # it raises the ActiveEntry::NotAuthenticatedError.
-    #
-    # Use the .rescue_from method from ActionController::Base
-    # to catch the exception and show the user a proper error message.
-    raise ActiveEntry::NotAuthenticatedError.new(error) unless is_authenticated == true
+  class Error < StandardError
   end
 
-  # Verifies that #authorize! has been called in the controller.
-  def verify_authorization!
-    raise ActiveEntry::AuthorizationNotPerformedError unless @_authorization_done == true
+  class AuthError < Error
+    attr_reader :error, :class_name, :method, :arguments
+
+    def initialize error, class_name, method, arguments
+      @error = error
+      @class_name = class_name
+      @method = method 
+      @arguments = arguments
+      @message = "Not authenticated for method ##{@method} in class #{@class_name}"
+
+      super @message
+    end
   end
-  
-  # Authorizes the user.
-  def authorize!
-    general_decision_maker_method_name = :authorized?
-    scoped_decision_maker_method_name = [action_name, :authorized?].join("_").to_sym
 
-    general_decision_maker_defined = respond_to? general_decision_maker_method_name, true
-    scoped_decision_maker_defined = respond_to? scoped_decision_maker_method_name, true
+  class NotPerformedError < Error
+    attr_reader :class_name, :method
 
-    # Check if a scoped decision maker method is defined and use it over
-    # general decision maker method.
-    decision_maker_to_use = scoped_decision_maker_defined ? scoped_decision_maker_method_name : general_decision_maker_method_name
-
-    # Raise an error if the #authorize? action isn't defined.
-    #
-    # This ensures that you actually do authorization in your controller. 
-    if !scoped_decision_maker_defined && !general_decision_maker_defined 
-      raise ActiveEntry::AuthorizationDecisionMakerMissingError
+    def initialize class_const, method
+      @class = class_const
+      @method = method
+      super "#{self.class.name}: For #{@class.name}##{@method}"
     end
+  end
+
+  class AuthenticationNotPerformedError < NotPerformedError
+  end
+
+  class AuthorizationNotPerformedError < NotPerformedError
+  end
+
+  class NotAuthenticatedError < AuthError
+  end
+
+  class NotAuthorizedError < AuthError
+  end
+
+  class NotDefinedError < Error
+    attr_reader :entry_name, :class_name, :method
+
+    def initialize entry_name, class_name, method
+      @entry_name = entry_name
+      @class_name = class_name
+      @method = method
+      @message = "Entry #{entry_name} for class #{@class_name} not defined. Called method was ##{@method}."
+    end
+  end
+
+  class ArgumentNilError < Error
+    attr_reader :argument_name
+
+    def initialize argument_name
+      @argument_name = argument_name
+      @message = "Argument #{@argument_name} nil. Arguments cannot be nil. Use optional parameter has to declare optional arguments."
+    end
+  end
+
+
+  class Base
+    AUTH_ERROR = AuthError
     
-    error = {}
-
-    if method(decision_maker_to_use).arity > 0
-      is_authorized = send(decision_maker_to_use, error)
-    else
-      is_authorized = send(decision_maker_to_use)
+    class Authentication < Base
+      AUTH_ERROR = NotAuthenticatedError
     end
 
-    # Tell #verify_authorization! that authorization
-    # has been performed.
-    @_authorization_done = true
+    class Authorization < Base
+      AUTH_ERROR = NotAuthorizedError
+    end
 
-    # If the authorized? method does not return true
-    # it raises the ActiveEntry::NotAuthorizedError
-    #
-    # Use the .rescue_from method from ActionController::Base
-    # to catch the exception and show the user a proper error message.
-    raise ActiveEntry::NotAuthorizedError.new(error) unless is_authorized == true
+    def initialize method_name, **args
+      @_method_name_entrify = method_name
+      args.each do |name, value|
+        if name.to_sym == :optional
+          args.each { |n, v| instance_variable_set ["@", name].join, value }
+          next
+        end
+
+        raise ArgumentNilError, name if value.nil?
+        instance_variable_set ["@", name].join, value
+      end
+    end
+
+    class << self
+      def pass! method_name, **args
+        new(method_name, args).pass!
+      end
+    end
+
+
+    def pass!
+      raise AUTH_ERROR, error unless pass?
+    end
+
+    def pass?
+      decision_maker_method.call
+    end
+
+    def success
+      true
+    end
+
+    private
+
+    def decision_maker_method
+      method([@_method_name_entrify, "?"].join)
+    end
+  end
+
+  class EntryFinder
+    attr_reader :class_const
+
+    def initialize class_const
+      @class = class_const
+    end
+
+    class << self
+      def entry_for class_const
+        new(class_const).entry
+      end
+    end
+
+    def entry
+      entry_class_name.constantize
+    end
+
+    private
+
+    def entry_class_name
+      [@class.name, "Entry"].join
+    end
   end
 end
