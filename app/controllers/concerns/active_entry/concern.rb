@@ -17,13 +17,13 @@ module ActiveEntry
       end
 
       def verify_authentication!
-        before_action do
+        after_action do
           raise AuthenticationNotPerformedError, self.class, action_name unless @__authentication_done
         end
       end
 
       def verify_authorization!
-        before_action do
+        after_action do
           raise AuthorizationNotPerformedError, self.class, action_name unless @__authorization_done
         end
       end
