@@ -74,8 +74,6 @@ module ActiveEntry
   end
 
   class Base
-    AUTH_ERROR = AuthError
-    
     class Authentication < Base
       AUTH_ERROR = NotAuthenticatedError
       

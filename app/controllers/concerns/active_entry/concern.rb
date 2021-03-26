@@ -6,8 +6,8 @@ module ActiveEntry
 
     class_methods do
       # Methods .authenticate_now! and .authorize_now!
-      [:authenticate, :authorize].each do |name|
-        define_method "#{name}_now!" do
+      [:authenticate, :authorize].each do |method_name|
+        define_method "#{method_name}_now!" do
           before_action do
             args = {}
             instance_variables.collect{ |v| v.to_s.remove("@").to_sym }.each do |name|
@@ -15,7 +15,7 @@ module ActiveEntry
               next if value.nil?
               args[name] = value
             end
-            send "#{name}!", **args
+            send "#{method_name}!", **args
           end
         end
       end
