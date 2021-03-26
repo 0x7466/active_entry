@@ -11,7 +11,7 @@ module ActiveEntry
           before_action do
             args = {}
             instance_variables.each { |name| args[name] = instance_variable_get name }
-            method("#{name}!").call action_name, args
+            send "#{name}!", **args
           end
         end
       end
@@ -30,12 +30,12 @@ module ActiveEntry
     end
     
     def authenticate! **args
-      entry_class::Authentication.pass! action_name, args
+      entry_class::Authentication.pass! action_name, **args
       @__authentication_done = true
     end
 
     def authorize! **args
-      entry_class::Authorization.pass! action_name, args
+      entry_class::Authorization.pass! action_name, **args
       @__authorization_done = true
     end
 

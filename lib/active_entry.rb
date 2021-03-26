@@ -98,7 +98,7 @@ module ActiveEntry
 
     class << self
       def pass! method_name, **args
-        new(method_name, args).pass!
+        new(method_name, **args).pass!
       end
     end
 
