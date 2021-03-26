@@ -32,7 +32,9 @@ module ActiveEntry
     def initialize class_const, method
       @class = class_const
       @method = method
-      super "#{self.class.name}: For #{@class.name}##{@method}"
+      @message = "#{self.class.name}: For #{@class.name}##{@method}"
+      
+      super @message
     end
   end
 
@@ -55,6 +57,7 @@ module ActiveEntry
       @entry_name = entry_name
       @class_name = class_name
       @message = "Entry #{entry_name} for class #{@class_name} not defined."
+      super @message
     end
   end
 
@@ -64,6 +67,7 @@ module ActiveEntry
     def initialize argument_name
       @argument_name = argument_name
       @message = "Argument #{@argument_name} nil. Arguments cannot be nil. Use optional parameter has to declare optional arguments."
+      super @message
     end
   end
 
