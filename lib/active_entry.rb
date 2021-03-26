@@ -126,7 +126,7 @@ module ActiveEntry
 
 
     def pass!
-      raise AUTH_ERROR.new(error) unless pass?
+      raise AUTH_ERROR.new(@error) unless pass?
     end
 
     def pass?

@@ -32,6 +32,11 @@ module ActiveEntry
         end
       end
     end
+
+    def pass! **args
+      authenticate! **args
+      authorize! **args
+    end
     
     def authenticate! **args
       entry_class::Authentication.pass! action_name, **args
