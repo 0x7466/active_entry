@@ -29,10 +29,10 @@ module ActiveEntry
   class NotPerformedError < Error
     attr_reader :class_name, :method
 
-    def initialize class_const, method
-      @class = class_const
+    def initialize class_name, method
+      @class_name = class_name
       @method = method
-      @message = "#{self.class.name}: For #{@class.name}##{@method}"
+      @message = "Auth not performed for #{@class_name}##{@method}."
       
       super @message
     end
