@@ -10,7 +10,7 @@ module ActiveEntry
         define_method "#{name}_now!" do
           before_action do
             args = {}
-            instance_variables.each { |name| args[name] = instance_variable_get name }
+            instance_variables.collect{ |v| v.to_s.remove("@").to_sym }.each { |name| args[name] = instance_variable_get ["@", name].join }
             send "#{name}!", **args
           end
         end
