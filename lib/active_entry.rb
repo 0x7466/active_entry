@@ -107,7 +107,7 @@ module ActiveEntry
 
 
     def pass!
-      raise AUTH_ERROR.new(@error, @_method_name_to_entrify, @_args) unless pass?
+      raise self.class::AUTH_ERROR.new(@error, @_method_name_to_entrify, @_args) unless pass?
     end
 
     def pass?
