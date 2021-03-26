@@ -13,17 +13,22 @@ module ActiveEntry
   end
 
   class AuthError < Error
-    attr_reader :error, :class_name, :method, :arguments
+    attr_reader :error, :method, :arguments
 
-    def initialize error, class_name, method, arguments
+    def initialize error, method, arguments
       @error = error
-      @class_name = class_name
       @method = method 
       @arguments = arguments
-      @message = "Not authenticated for method ##{@method} in class #{@class_name}"
+      @message = "Not authenticated/authorized for method ##{@method}"
 
       super @message
     end
+  end
+
+  class NotAuthenticatedError < AuthError
+  end
+
+  class NotAuthorizedError < AuthError
   end
 
   class NotPerformedError < Error
@@ -42,12 +47,6 @@ module ActiveEntry
   end
 
   class AuthorizationNotPerformedError < NotPerformedError
-  end
-
-  class NotAuthenticatedError < AuthError
-  end
-
-  class NotAuthorizedError < AuthError
   end
 
   class NotDefinedError < Error
@@ -106,9 +105,10 @@ module ActiveEntry
 
     def initialize method_name, **args
       @_method_name_to_entrify = method_name
-      args.each do |name, value|
+      @_args = args
+      @_args.each do |name, value|
         if name.to_sym == :optional
-          args.each { |n, v| instance_variable_set ["@", name].join, value }
+          value.each { |n, v| instance_variable_set ["@", name].join, value }
           next
         end
 
@@ -126,7 +126,7 @@ module ActiveEntry
 
 
     def pass!
-      raise AUTH_ERROR.new(@error) unless pass?
+      raise AUTH_ERROR.new(@error, @_method_name_to_entrify, @_args) unless pass?
     end
 
     def pass?
