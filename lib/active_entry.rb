@@ -49,13 +49,12 @@ module ActiveEntry
   end
 
   class NotDefinedError < Error
-    attr_reader :entry_name, :class_name, :method
+    attr_reader :entry_name, :class_name
 
-    def initialize entry_name, class_name, method
+    def initialize entry_name, class_name
       @entry_name = entry_name
       @class_name = class_name
-      @method = method
-      @message = "Entry #{entry_name} for class #{@class_name} not defined. Called method was ##{@method}."
+      @message = "Entry #{entry_name} for class #{@class_name} not defined."
     end
   end
 
@@ -123,7 +122,7 @@ module ActiveEntry
     attr_reader :class_name
 
     def initialize class_name
-      @class = class_name
+      @class_name = class_name
     end
 
     class << self
@@ -133,7 +132,7 @@ module ActiveEntry
     end
 
     def entry
-      entry_class_name.constantize
+      entry_class_name.safe_constantize or raise NotDefinedError.new(entry_class_name, @class_name)
     end
 
     private
