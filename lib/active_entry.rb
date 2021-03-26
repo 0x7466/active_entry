@@ -120,15 +120,15 @@ module ActiveEntry
   end
 
   class EntryFinder
-    attr_reader :class_const
+    attr_reader :class_name
 
-    def initialize class_const
-      @class = class_const
+    def initialize class_name
+      @class = class_name
     end
 
     class << self
-      def entry_for class_const
-        new(class_const).entry
+      def entry_for class_name
+        new(class_name).entry
       end
     end
 
@@ -139,7 +139,7 @@ module ActiveEntry
     private
 
     def entry_class_name
-      [@class.name, "Entry"].join
+      [@class_name, "Entry"].join
     end
   end
 end
