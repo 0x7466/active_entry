@@ -90,10 +90,18 @@ module ActiveEntry
     
     class Authentication < Base
       AUTH_ERROR = NotAuthenticatedError
+      
+      def self.pass! method_name, **args
+        new(method_name, **args).pass!
+      end
     end
 
     class Authorization < Base
       AUTH_ERROR = NotAuthorizedError
+      
+      def self.pass! method_name, **args
+        new(method_name, **args).pass!
+      end
     end
 
     def initialize method_name, **args
@@ -111,7 +119,8 @@ module ActiveEntry
 
     class << self
       def pass! method_name, **args
-        new(method_name, **args).pass!
+        Authentication.pass! method_name, **args
+        Authorization.pass! method_name, **args
       end
     end
 
