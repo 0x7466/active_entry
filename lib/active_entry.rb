@@ -73,17 +73,6 @@ module ActiveEntry
     end
   end
 
-  class ArgumentNilError < Error
-    attr_reader :argument_name
-
-    def initialize argument_name
-      @argument_name = argument_name
-      @message = "Argument #{@argument_name} nil. Arguments cannot be nil. Use optional parameter has to declare optional arguments."
-      super @message
-    end
-  end
-
-
   class Base
     AUTH_ERROR = AuthError
     
@@ -106,15 +95,7 @@ module ActiveEntry
     def initialize method_name, **args
       @_method_name_to_entrify = method_name
       @_args = args
-      @_args.each do |name, value|
-        if name.to_sym == :optional
-          value.each { |n, v| instance_variable_set ["@", name].join, value }
-          next
-        end
-
-        raise ArgumentNilError.new(name) if value.nil?
-        instance_variable_set ["@", name].join, value
-      end
+      @_args.each { |name, value| instance_variable_set ["@", name].join, value }
     end
 
     class << self
