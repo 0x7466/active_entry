@@ -39,12 +39,12 @@ module ActiveEntry
     end
     
     def authenticate! **args
-      entry_class::Authentication.pass! action_name, **args
+      entry_class::Authentication.pass! action_name, **args unless @__authentication_done
       @__authentication_done = true
     end
 
     def authorize! **args
-      entry_class::Authorization.pass! action_name, **args
+      entry_class::Authorization.pass! action_name, **args unless @__authorization_done
       @__authorization_done = true
     end
 
