@@ -57,6 +57,19 @@ module ActiveEntry
       @entry_name = entry_name
       @class_name = class_name
       @message = "Entry #{entry_name} for class #{@class_name} not defined."
+
+      super @message
+    end
+  end
+
+  class DecisionMakerMethodNotDefinedError < Error
+    attr_reader :entry_name, :decision_maker_method_name
+
+    def initialize entry_name, decision_maker_method_name
+      @entry_name = entry_name
+      @decision_maker_method_name = decision_maker_method_name
+      @message = "Decision maker #{entry_name}##{decision_maker_method_name} is not defined."
+
       super @message
     end
   end
@@ -84,7 +97,7 @@ module ActiveEntry
     end
 
     def initialize method_name, **args
-      @_method_name_entrify = method_name
+      @_method_name_to_entrify = method_name
       args.each do |name, value|
         if name.to_sym == :optional
           args.each { |n, v| instance_variable_set ["@", name].join, value }
@@ -118,7 +131,9 @@ module ActiveEntry
     private
 
     def decision_maker_method
-      method([@_method_name_entrify, "?"].join)
+      decision_maker_method_name = [@_method_name_to_entrify, "?"].join
+      raise DecisionMakerMethodNotDefinedError.new(self.class, decision_maker_method_name) unless respond_to?(decision_maker_method_name)
+      method decision_maker_method_name
     end
   end
 
