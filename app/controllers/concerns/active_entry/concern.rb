@@ -11,7 +11,7 @@ module ActiveEntry
           before_action do
             args = {}
             instance_variables.each { |name| args[name] = instance_variable_get name }
-            method("#{name}!").call args
+            method("#{name}!").call action_name, args
           end
         end
       end
