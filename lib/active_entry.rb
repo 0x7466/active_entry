@@ -91,7 +91,7 @@ module ActiveEntry
           next
         end
 
-        raise ArgumentNilError, name if value.nil?
+        raise ArgumentNilError.new(name) if value.nil?
         instance_variable_set ["@", name].join, value
       end
     end
@@ -104,7 +104,7 @@ module ActiveEntry
 
 
     def pass!
-      raise AUTH_ERROR, error unless pass?
+      raise AUTH_ERROR.new(error) unless pass?
     end
 
     def pass?
