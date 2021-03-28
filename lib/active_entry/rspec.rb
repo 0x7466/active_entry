@@ -1,6 +1,35 @@
 module ActiveEntry
   module RSpec
     module Matchers
+      extend RSpec::Matchers::DSL
+
+      matcher :be_authenticated_for do |action, **args|
+        match do |policy|
+          policy.pass? action, **args
+        end
+
+        description do
+          "be authenticated for #{action}"
+        end
+
+        failure_message do |policy|
+          "expected that #{policy} passes authentication for #{action}"
+        end
+      end
+
+      matcher :be_authorized_for do |action, **args|
+        match do |policy|
+          policy.pass? action, **args
+        end
+
+        description do
+          "be authorized for #{action}"
+        end
+
+        failure_message do |policy|
+          "expected that #{policy} passes authorization for #{action}"
+        end
+      end
     end
 
     module DSL
