@@ -1,7 +1,7 @@
 module ActiveEntry
   module RSpec
     module Matchers
-      extend RSpec::Matchers::DSL
+      extend ::RSpec::Matchers::DSL
 
       matcher :be_authenticated_for do |action, **args|
         match do |policy|
@@ -51,6 +51,6 @@ RSpec.configure do |config|
   config.include(
     ActiveEntry::RSpec::PolicyExampleGroup,
     type: :policy,
-    file_path: %r{spec/entries}
+    file_path: %r{spec/policies}
   )
 end
