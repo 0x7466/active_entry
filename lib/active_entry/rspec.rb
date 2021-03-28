@@ -1,5 +1,5 @@
 module ActiveEntry
-  module RSpec
+  module Rspec
     module Matchers
       extend ::RSpec::Matchers::DSL
 
@@ -40,7 +40,7 @@ module ActiveEntry
 
       def self.included(base)
         base.metadata[:type] = :policy
-        base.extend ActiveEntry::RSpec::DSL
+        base.extend ActiveEntry::Rspec::DSL
         super
       end
     end
@@ -49,7 +49,7 @@ end
 
 RSpec.configure do |config|
   config.include(
-    ActiveEntry::RSpec::PolicyExampleGroup,
+    ActiveEntry::Rspec::PolicyExampleGroup,
     type: :policy,
     file_path: %r{spec/policies}
   )
