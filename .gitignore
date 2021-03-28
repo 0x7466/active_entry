@@ -11,3 +11,5 @@
 /.yardoc/
 .byebug_history
 *.gem
+/coverage/
+!/coverage/coverage_badge_total.svg
