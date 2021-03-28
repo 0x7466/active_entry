@@ -1,5 +1,5 @@
 module <%= class_name %>Policy
-  class Authentication < ApplicationEntry::Authentication
+  class Authentication < ApplicationPolicy::Authentication
     # It's all about decision makers. In your decision makers you tell
     # Active Entry when and if somebody is authenticated/authorized.
     #
@@ -28,7 +28,7 @@ module <%= class_name %>Policy
     # end
   end
 
-  class Authorization < ApplicationEntry::Authorization
+  class Authorization < ApplicationPolicy::Authorization
     # def index?
     # end
 
