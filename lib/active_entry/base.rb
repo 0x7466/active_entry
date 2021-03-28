@@ -6,6 +6,10 @@ module ActiveEntry
       def self.pass! method_name, **args
         new(method_name, **args).pass!
       end
+
+      def self.pass? method_name, **args
+        new(method_name, **args).pass?
+      end
     end
 
     class Authorization < Base
@@ -13,6 +17,10 @@ module ActiveEntry
       
       def self.pass! method_name, **args
         new(method_name, **args).pass!
+      end
+
+      def self.pass? method_name, **args
+        new(method_name, **args).pass?
       end
     end
 
@@ -26,6 +34,11 @@ module ActiveEntry
       def pass! method_name, **args
         Authentication.pass! method_name, **args
         Authorization.pass! method_name, **args
+      end
+
+      def pass? method_name, **args
+        Authentication.pass? method_name, **args
+        Authorization.pass? method_name, **args
       end
     end
 
