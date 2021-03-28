@@ -1,13 +1,18 @@
 class TestController < ApplicationController
-  def non_restful
+  include ActiveEntry::ControllerConcern
+
+  def unauthenticated
+    pass!
     head :no_content
   end
 
-  private
-
-  def authenticated?
+  def authenticated_unauthorized
+    pass!
+    head :no_content
   end
 
-  def authorized?
+  def authenticated_authorized
+    pass!
+    head :no_content
   end
 end

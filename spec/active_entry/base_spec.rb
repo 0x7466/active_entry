@@ -1,4 +1,4 @@
-require "spec_helper"
+require "rails_helper"
 
 [[ActiveEntry::Base::Authentication, ActiveEntry::NotAuthenticatedError], [ActiveEntry::Base::Authorization, ActiveEntry::NotAuthorizedError]].each do |example|
   describe example[0] do

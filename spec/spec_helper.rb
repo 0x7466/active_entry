@@ -1,4 +1,3 @@
-require 'active_entry'
 require 'simplecov'
 require 'simplecov_small_badge'
 SimpleCov.start do
