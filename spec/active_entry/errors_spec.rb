@@ -17,15 +17,15 @@ describe ActiveEntry::NotPerformedError do
 end
 
 describe ActiveEntry::NotDefinedError do
-  subject { ActiveEntry::NotDefinedError.new "entry_name", "class_name" }
-  it { expect(subject.entry_name).to eq "entry_name" }
+  subject { ActiveEntry::NotDefinedError.new "policy_name", "class_name" }
+  it { expect(subject.policy_name).to eq "policy_name" }
   it { expect(subject.class_name).to eq "class_name" }
-  it { expect(subject.message).to eq "Entry entry_name for class class_name not defined." }
+  it { expect(subject.message).to eq "Policy policy_name for class class_name not defined." }
 end
 
 describe ActiveEntry::DecisionMakerMethodNotDefinedError do
-  subject { ActiveEntry::DecisionMakerMethodNotDefinedError.new "entry_name", "decision_maker_method_name" }
-  it { expect(subject.entry_name).to eq "entry_name" }
+  subject { ActiveEntry::DecisionMakerMethodNotDefinedError.new "policy_name", "decision_maker_method_name" }
+  it { expect(subject.policy_name).to eq "policy_name" }
   it { expect(subject.decision_maker_method_name).to eq "decision_maker_method_name" }
-  it { expect(subject.message).to eq "Decision maker entry_name#decision_maker_method_name is not defined." }
+  it { expect(subject.message).to eq "Decision maker policy_name#decision_maker_method_name is not defined." }
 end

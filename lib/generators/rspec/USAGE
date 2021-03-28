@@ -1,0 +1,8 @@
+Description:
+    Generates a new policy spec to test authentication/authorization.
+
+Example:
+    bin/rails generate rspec:policy Users
+
+    This will create:
+        spec/policies/users_policy_spec.rb

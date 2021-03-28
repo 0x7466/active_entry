@@ -1,0 +1,8 @@
+Description:
+    Generates a new policy class for authentication/authorization.
+
+Example:
+    bin/rails generate policy Users
+
+    This will create:
+        app/policies/users_policy.rb

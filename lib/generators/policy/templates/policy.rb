@@ -1,4 +1,4 @@
-module UsersEntry
+module <%= class_name %>Policy
   class Authentication < ApplicationEntry::Authentication
     # It's all about decision makers. In your decision makers you tell
     # Active Entry when and if somebody is authenticated/authorized.

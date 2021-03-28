@@ -40,24 +40,24 @@ module ActiveEntry
   end
 
   class NotDefinedError < Error
-    attr_reader :entry_name, :class_name
+    attr_reader :policy_name, :class_name
 
-    def initialize entry_name, class_name
-      @entry_name = entry_name
+    def initialize policy_name, class_name
+      @policy_name = policy_name
       @class_name = class_name
-      @message = "Entry #{entry_name} for class #{@class_name} not defined."
+      @message = "Policy #{policy_name} for class #{@class_name} not defined."
 
       super @message
     end
   end
 
   class DecisionMakerMethodNotDefinedError < Error
-    attr_reader :entry_name, :decision_maker_method_name
+    attr_reader :policy_name, :decision_maker_method_name
 
-    def initialize entry_name, decision_maker_method_name
-      @entry_name = entry_name
+    def initialize policy_name, decision_maker_method_name
+      @policy_name = policy_name
       @decision_maker_method_name = decision_maker_method_name
-      @message = "Decision maker #{entry_name}##{decision_maker_method_name} is not defined."
+      @message = "Decision maker #{policy_name}##{decision_maker_method_name} is not defined."
 
       super @message
     end

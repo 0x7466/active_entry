@@ -39,19 +39,19 @@ module ActiveEntry
     end
     
     def authenticate! **args
-      entry_class::Authentication.pass! action_name, **args unless @__authentication_done
+      policy_class::Authentication.pass! action_name, **args unless @__authentication_done
       @__authentication_done = true
     end
 
     def authorize! **args
-      entry_class::Authorization.pass! action_name, **args unless @__authorization_done
+      policy_class::Authorization.pass! action_name, **args unless @__authorization_done
       @__authorization_done = true
     end
 
     private
 
-    def entry_class
-      EntryFinder.entry_for self.class.name.remove("Controller")
+    def policy_class
+      PolicyFinder.policy_for self.class.name.remove("Controller")
     end
   end
 end
