@@ -11,7 +11,64 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/3db0f653be6bdfe0fdac/maintainability)](https://codeclimate.com/github/TFM-Agency/active_entry/maintainability)
 [![Documentation](https://img.shields.io/badge/docs-rdoc.info-blue.svg)](https://rubydoc.info/github/TFM-Agency/active_entry/main)
 
-Active Entry is a simple and secure authentication and authorization system for your Rails application, which lets you to authenticate and authorize directly in your controllers.
+Active Entry is a secure way to check for authentication and authorization before an action is performed. It's currently only compatible with Rails. But in later versions will ActiveEntry be Framework independent.
+
+Active Entry works like many other Authorization Systems like [Pundit](https://github.com/varvet/pundit) or [Action Policy](https://github.com/palkan/action_policy) with **Policies**. However in Active Entry it's all about the method calling the auth mechanism. For every method that needs authentication or authorization, a decision maker method counterpart has to be created in the policy of the class.
+
+## Example
+
+Let's say we have an Users controller in our application:
+
+```ruby
+# app/controllers/users_controller.rb
+class UsersController < ApplicationController
+  include ActiveEntry::ControllerConcern   # Glue for the controller and Active Entry
+
+  def index
+    pass!   # The auth happens here
+    load_users
+  end
+end
+```
+
+We have to create the UsersPolicy in order for Active Entry to know who is authenticated and authorized and who not.
+
+```ruby
+# app/policies/users_policy.rb
+module UsersPolicy
+  class Authentication < ActiveEntry::Base::Authentication
+    def index?
+      Current.user_signed_in?  # Only signed in users are considered to be authenticated.
+    end
+  end
+
+  class Authorization < ActiveEntry::Base::Authorization
+    def index?
+      Current.user.admin?  # Only admins are authorized to perform this action
+    end
+  end
+end
+```
+
+Now every time somebody calls the `users#index` endpoint, he or she has to be signed in and an admin. Otherwise `ActiveEntry::NotAuthenticatedError` or `ActiveEntry::NotAuthorizedError` are raised.
+You can catch them easily in your controller by using Rails' `rescue_from`.
+
+```ruby
+class ApplicationController < ActionController::Base
+  rescue_from ActiveEntry::NotAuthenticatedError, with: :not_authenticated
+  rescue_from ActiveEntry::NotAuthorizedError, with: :not_authorized
+
+  def not_authenticated
+    flash[:danger] = "Not authenticated. Please sign in."
+    redirect_to sign_in_path
+  end
+
+  def not_authorized
+    flash[:danger] = "Not authorized."
+    redirect_to root_path
+  end
+end
+```
 
 ## Installation
 Add this line to your application's Gemfile:
@@ -20,72 +77,119 @@ Add this line to your application's Gemfile:
 gem 'active_entry'
 ```
 
-And then execute:
-```bash
-$ bundle
-```
-
-Or install it yourself as:
+Or install it without bundler:
 ```bash
 $ gem install active_entry
 ```
 
+Run Bundle:
+```shell
+$ bundle
+```
+
+And then install Active Entry:
+```shell
+$ rails g active_entry:install
+```
+
+This will generate `app/policies/application_policy.rb`.
+
 ## Usage
-With Active Entry authentication and authorization is done in your Rails controllers. To enable authentication and authorization in one of your controllers, just add a before action for `authenticate!` and `authorize!` and the user has to authenticate and authorize on every call.
+Active Entry works with Policies. You can generate policies the following way:
 
-### Verify authentication and authorization
-You probably want to control authentication and authorization for every controller action you have in your app. As a safeguard to ensure, that auth is performed in every controller and the call for auth is not forgotten in development, add the `#verify_authentication!` and `#verify_authorization` as after action callbacks to your `ApplicationController`.
+Let's consider the example from above.
+We have an UsersController and we want a policy for that:
 
-```ruby
-class ApplicationController < ActionController::Base
-  before_action :verify_authentication!, :verify_authorization!
-  # ...
-end
-```
-This ensures, that you call `authenticate!` and/or `authorize!` in all your controllers and raises an `ActiveEntry::AuthenticationNotPerformedError` / `ActiveEntry::AuthorizationNotPerformedError` if not.
-
-### Perform authentication and authorization
-in order to do the actual authentication and authorization, you have to add `authenticate!` and `authorize!` as before action callback in your controllers.
-
-```ruby
-class DashboardController < ApplicationController
-  before_action :authenticate!, :authorize!
-  # ...
-end
+```shell
+$ rails g policy Users
 ```
 
-If you try to open a page, you will get an `ActiveEntry::AuthenticationDecisionMakerMissingError` or `ActiveEntry::AuthorizationDecisionMakerMissingError`. This means that you have to instruct Active Entry when a user is authenticated/authorized and when not.
-You can do this by defining the methods `authenticated?` and `authorized?` in your controller.
+This generates a policy called `UsersPolicy` and is located in `app/policies/users_policy.rb`.
+
+The above generator call would generate something like this, but with a few comments to help you get started:
 
 ```ruby
-class DashboardController < ApplicationController
-  # Actions ...
-
-  private
-
-  def authenticated?
-    return true if user_signed_in?
+module UsersPolicy
+  class Authentication < ActiveEntry::Base::Authentication
   end
 
-  def authorized?
-    return true if current_user.admin?
-  end 
+  class Authorization < ActiveEntry::Base::Authorization
+  end
 end
 ```
 
-Active Entry expects boolean return values from `authenticated?` and `authorized?`. `true` signals successful authentication/authorization, everything else not.
+### Verify authentication and authorization
+You probably want to control authentication and authorization for every controller action you have in your app. As a safeguard to ensure, that auth is performed in every request and the auth call is not forgotten in development, add the `verify_authentication!` and `verify_authorization!` to your `ApplicationController`:
+
+```ruby
+class ApplicationController < ActionController::Base
+  verify_authentication!
+  verify_authorization!
+  # ...
+end
+```
+This ensures, that you perform auth in all your controllers and raises errors if not.
+
+### Perform authentication and authorization
+in order to do the actual authentication and authorization, you have to use `authenticate!` and `authorize!` or `pass!` as in your actions.
+
+```ruby
+class UsersController < ApplicationController
+  def authentication_only_action
+    authenticate!
+  end
+
+  def authorization_only_action
+    authorize!
+  end
+
+  def both_authentication_and_authorization_action
+    pass!
+  end
+end
+```
+
+If you try to open a page, Active Entry will raise `ActiveEntry::DecisionMakerMethodNotDefinedError`. This means we have to define the decision makers in our policy.
+
+```ruby
+module UsersPolicy
+  class Authentication < ApplicationPolicy::Authentication
+    def authentication_only_action?
+      success   # == true | Everybody is allowed
+    end
+
+    def both_authentication_and_authorization_action?
+      success
+    end
+  end
+
+  class Authorization < ApplicationPolicy::Authorization
+    def authorization_only_action?
+      success
+    end
+
+    def both_authentication_and_authorization_action?
+      success
+    end
+  end
+end
+```
+
+Every decision maker ends with an `?`. The name has to be the same as the name of the controller action. So `index` is going to be `index?`.
+
+In order for Active Entry to not raise an auth error, the decision makers have to return `true`. In our above example we used `success`, which simply returns `true`.
+
+**Note:** It has to be an explicit `true` and not just a truthy value. A string or object return value would raise an auth error.
 
 ### Rescuing from errors
-
-If the user is signed in, he is authenticated and authorized if he is an admin, otherwise an `ActiveEntry::NotAuthenticatedError` or `ActiveEntry::NotAuthorizedError` will be raised.
-Now you just have to catch this error and react accordingly. Rails has the convenient `rescue_from` for that.
+Catch the errors in your controllers to redirect the user or show them a message.
 
 ```ruby
 class ApplicationController < ActionController::Base
   # ...
 
-  rescue_from ActiveEntry::NotAuthenticatedError, with: :not_authenticated unless Rails.env.test?
-  rescue_from ActiveEntry::NotAuthorizedError, with: :not_authorized unless Rails.env.test?
+  rescue_from ActiveEntry::NotAuthenticatedError, with: :not_authenticated
+  rescue_from ActiveEntry::NotAuthorizedError, with: :not_authorized
 
   private
 
@@ -103,86 +207,70 @@ end
 
 In this example above, the user will be redirected with a flash message. But you can do whatever you want. For example logging.
 
-### Scoped decision makers
-
-Instead of putting all authentication/authorization logic into `authenticated?` and `authorized?` you can create scoped decision makers:
+### Authenticate/authorize outside the action
+You can authenticate and authorize outside the action:
 
 ```ruby
-class DashboardController < ApplicationController
-  before_action :authenticate!, :authorize!
-
-  def index_authenticated?
-    # Do your authentication for the index action only
-  end
-  def index_authorized?
-    # Do your authorization for the index action only
-  end
-  def index
-    # Actual action
-  end
+class UsersController < ApplicationController
+  authenticate_now!
+  authorize_now!
+  # pass_now!  # Does both, authentication and authorization
 end
 ```
 
-This puts authentication/authorization logic a lot closer to the actual action that is performed and you don't get lost in endlessly long `authenticated?` or `authorized?` decision maker methods.
+Access control on class level will ensure that every action performs it.
 
-**Note:** The scoped authentication/authorization decision maker methods take precendence over the general ones. That means if you have an `index_authenticated?` for your index action defined, the general `authenticated?` gets ignored.
+**Note:** Don't use the class methods if the controller is inherited in other controllers. Best, don't use them at all and use the methods in the actions conciously.
 
-### Controller helper methods
-
-Active Entry also has a few helper methods which help you to distinguish between controller actions. You can check if a specific action got called, by adding `_action?` to the action name in your `authenticated?` or `authorized?`.
-For an action `show` this would be `show_action?`.
-
-**Note:** A `NoMethodError` gets raised if you try to call `_action?` if the actual action hasn't been implemented. For example `missing_implementation_action?` raises an error as long as `#missing_implementation` hasn't been implemented as action.
-
-The are some more helpers that check for more than one RESTful action:
-
- * `read_action?` - If the called action just read. Actions: `index`, `show`
- * `write_action?` - If the called action writes something. Actions: `new`, `create`, `edit`, `update`, `destroy`
- * `change_action?` - If something will be updated or destroyed. Actions: `edit`, `update`, `destroy`
- * `create_action?` - If something will be created. Actions: `new`, `create`
- * `update_action?` - If something will be updated. Actions: `edit`, `update`
- * `destroy_action?` - If something will be destroyed. Action: `destroy`
- * `delete_action?` - Alias for `destroy_action?`. Action: `destroy`
- * `collection_action?` - If the called action is a collection action. Actions: `index`, `new`, `create`
- * `member_action?` - Everything that is not a collection action. Including non-RESTful actions.
-
-So you can for example do:
+## Variables
+You can pass variables to the decision maker.
 
 ```ruby
-class ApplicationController < ActionController::Base
-  # ...
-
+class UsersController < ApplicationController
   def show
+    @user = User.find params[:id]
+    pass! user: @user
   end
+end
+```
 
-  def custom
-  end
+You can now access the user object as instance variable in your decision maker.
 
-  private
-
-  def authorized?
-    return true if read_action?    # Everybody is authorized to call read actions
-
-    if write_action?
-      return true if admin_signed_in?		# Just admins are allowed to call write actions
+```ruby
+module Users
+  class Authentication < ApplicationPolicy::Authentication
+    def show?
+      @user  # == <User:Instance>
     end
+  end
 
-    if custom_action?   # For custom/non-RESTful actions
-      return true
+  class Authorization < ApplicationPolicy::Authorization
+    def show?
+      @user  # == <User:Instance>
     end
   end
 end
 ```
 
-This is pretty much everything you have to do for basic authentication or authorization!
-
-## Pass a custom error hash
-You can pass an error hash to the exception and use this in your rescue method:
+## Custom error data
+If you write something into `@error` in our decision maker, you can access it in your rescue methods in the controller:
 
 ```ruby
+module UsersPolicy
+  class Authentication < ApplicationPolicy::Authentication
+    def show?
+      @error = { code: 100 }
+    end
+  end
+
+  class Authorization < ApplicationPolicy::Authorization
+    def show?
+      @error = { code: 100 }
+    end
+  end
+end
+
 class ApplicationController < ActionController::Base
-  before_action :authenticate!, :authorize!
-	
   # ...
 
   rescue_from ActiveEntry::NotAuthenticatedError, with: :not_authenticated
@@ -190,87 +278,133 @@ class ApplicationController < ActionController::Base
 
   private
 
-  def not_authenticated(exception)
+  def not_authenticated exception
     flash[:danger] = "You are not authenticated! Code: #{exception.error[:code]}"
     redirect_to root_path
   end
 
-  def not_authorized(exception)
+  def not_authorized exception
     flash[:danger] = "You are not authorized to call this action! Code: #{exception.error[:code]}"
     redirect_to root_path
   end
-
-  def authenticated?(error)
-    error[:code] = "ERROR"
-
-    return true if user_signed_in?
-  end
-	
-  def authorized?(error)
-    error[:code] = "ERROR"
-
-    return true if read_action?    # Everybody is authorized to call read actions
-
-    if write_action?
-      return true if admin_signed_in?		# Just admins are allowed to call write actions
-    end
-  end
-end
-```
-## Testing authentication and authorization
-If you check for the Rails environment with `unless Rails.env.test?` in your `rescue_from` statement you can easily test your authentication and authorization in your tests.
-
-```ruby
-class ApplicationController < ActionController::Base
-  # ...
-  rescue_from ActiveEntry::NotAuthenticatedError, with: :not_authenticated unless Rails.env.test?
-  rescue_from ActiveEntry::NotAuthorizedError, with: :not_authorized unless Rails.env.test?
-  # ...
 end
 ```
 
-Now you can catch `ActiveEntry::NotAuthenticatedError` / `ActiveEntry::NotAuthorizedError` in your test site like this:
+But you can pass in whatever you want into your error hash.
+
+## Testing
+You can easily test your policies in RSpec. Let's start with the generator:
+
+```shell
+$ rails g rspec:policy Users
+```
+
+This will generate a spec for the `UsersPolicy` located in `spec/policies/users_policy_spec.rb`
 
 ```ruby
 require "rails_helper"
 
-RSpec.describe "Users", type: :request do
-  describe "Authentication" do
-    context "#index" do
-      context "authenticated" do
-        it "as signed in user" do
-          sign_in_as user
-          expect{ get users_path }.to_not raise_error ActiveEntry::NotAuthenticatedError
-        end
-      end
+RSpec.describe UsersPolicy, type: :policy do
+  pending "add some examples to (or delete) #{__FILE__}"
+end
+```
 
-      context "not authenticated" do
-        it "as stranger" do
-          expect{ get users_path }.to raise_error ActiveEntry::NotAuthenticatedError
-        end
-      end
+Now you can easily test every decision maker with the `be_authenticated_for` and `be_authorized_for` matchers.
+
+```ruby
+require "rails_helper"
+
+RSpec.describe UsersPolicy, type: :policy do
+  describe UsersPolicy::Authentication do
+    subject { UsersPolicy::Authentication }
+
+    context "anonymous" do
+      it { is_expected.to_not be_authenticated_for :index }
+      it { is_expected.to be_authenticated_for :new }
+      it { is_expected.to be_authenticated_for :create }
+      it { is_expected.to_not be_authenticated_for :edit }
+      it { is_expected.to_not be_authenticated_for :update }
+      it { is_expected.to_not be_authenticated_for :destroy }
+      it { is_expected.to_not be_authenticated_for :restore }
+    end
+
+    context "signed in" do
+      before { Current.user = build :user }
+      
+      it { is_expected.to be_authenticated_for :index }
+      it { is_expected.to be_authenticated_for :new }
+      it { is_expected.to be_authenticated_for :create }
+      it { is_expected.to be_authenticated_for :edit }
+      it { is_expected.to be_authenticated_for :update }
+      it { is_expected.to be_authenticated_for :destroy }
+      it { is_expected.to be_authenticated_for :restore }
     end
   end
 
-  describe "Authorization" do
-    context "#index" do
-      context "authorized" do
-        it "as admin" do
-          sign_in_as admin
-          expect{ get users_path }.to_not raise_error ActiveEntry::NotAuthorizedError
-        end
-      end
+  describe UsersPolicy::Authorization do
+    subject { UsersPolicy::Authorization }
 
-      context "not authenticated" do
-        it "as non-admin" do
-          sign_in_as user
-          expect{ get users_path }.to raise_error ActiveEntry::NotAuthorizedError
-        end
-      end
+    let(:user) { build :user }
+    
+    context "anonymous" do
+      it { is_expected.to be_authorized_for :index }
+      it { is_expected.to be_authorized_for :new }
+      it { is_expected.to be_authorized_for :create }
+      it { is_expected.to be_authorized_for :show, user: user }
+      it { is_expected.to_not be_authorized_for :edit, user: user }
+      it { is_expected.to_not be_authorized_for :update, user: user }
+      it { is_expected.to_not be_authorized_for :destroy, user: user }
+      it { is_expected.to_not be_authorized_for :restore, user: user }
+    end
+
+    context "if @user is Current.user" do
+      before { Current.user = user }
+      
+      it { is_expected.to be_authorized_for :show, user: user }
+      it { is_expected.to be_authorized_for :edit, user: user }
+      it { is_expected.to be_authorized_for :update, user: user }
+      it { is_expected.to be_authorized_for :destroy, user: user }
+      it { is_expected.to be_authorized_for :restore, user: user }
+    end
+
+    context "if @user is not Current.user" do
+      before { Current.user = build :user }
+
+      it { is_expected.to be_authorized_for :show, user: user }
+      it { is_expected.to_not be_authorized_for :edit, user: user }
+      it { is_expected.to_not be_authorized_for :update, user: user }
+      it { is_expected.to_not be_authorized_for :destroy, user: user }
+      it { is_expected.to_not be_authorized_for :restore, user: user }
     end
   end
 end
 ```
+
+## Differences to Action Policy
+[Action Policy](https://github.com/palkan/action_policy) is an awesome gem which works pretty similar to Active Entry. But there are some differences:
+
+### Action Policy expects a performing subject and a target object
+```ruby
+class PostPolicy < ApplicationPolicy
+  def update?
+    # `user` is a performing subject,
+    # `record` is a target object (post we want to update)
+    user.admin? || (user.id == record.user_id)
+  end
+end
+```
+
+In Active Entry you can pass in anything you want into the decision maker, which is accessible as instance variables. See Variables.
+
+One strategy is not better than the other. It's just our preference.
+
+### Policies in Action Policy are for Resources/Models
+If you have a `Post` model, you have a `PostPolicy` in Action Policy. In Active Entry you create policies for controllers. So if you have a `PostsController`, you have a `PostsPolicy`.
+We like to build access control logic around controller endpoints.
+
+### Action Policy performs only authorization
+Active Entry does technically also not provide authentication mechanisms. It's just that you place your authentication logic in an authentication decision maker.
+We like both authentication and authorization logic in the same place but seperated hence `UsersPolicy::Authentication` and `UsersPolicy::Authorization`.
 
 ## Contributing
 Create pull requests on Github and help us to improve this Gem. There are some guidelines to follow:
