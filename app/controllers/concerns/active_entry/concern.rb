@@ -5,8 +5,8 @@ module ActiveEntry
     extend ActiveSupport::Concern
 
     class_methods do
-      # Methods .authenticate_now! and .authorize_now!
-      [:authenticate, :authorize].each do |method_name|
+      # Methods .authenticate_now!, .authorize_now!, and .pass_now!
+      [:authenticate, :authorize, :pass].each do |method_name|
         define_method "#{method_name}_now!" do
           before_action do
             args = {}
