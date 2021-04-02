@@ -1,3 +1,3 @@
 module ActiveEntry
-  VERSION = '2.0.0alpha'
+  VERSION = '2.0.0'
 end
