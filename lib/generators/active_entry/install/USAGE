@@ -1,0 +1,8 @@
+Description:
+    Installs Active Entry. Generates an ApplicationPolicy.
+
+Example:
+    bin/rails generate active_entry:install
+
+    This will create:
+        app/policies/application_policy.rb
