@@ -65,6 +65,12 @@ RSpec.describe ActiveEntry::ViewHelper, type: :helper do
       it "is a link" do
         expect(helper.link_to_if_authorized("demo", "/authenticated_authorized")).to eq "<a href=\"/authenticated_authorized\">demo</a>"
       end
+
+      context "with args" do
+        it "is a link" do
+          expect(helper.link_to_if_authorized("demo", "/authenticated_authorized_with_arg", arg: :demo)).to eq "<a href=\"/authenticated_authorized_with_arg\">demo</a>"
+        end
+      end
     end
 
     context "if not authorized" do

@@ -11,6 +11,10 @@ module TestPolicy
     def authenticated_authorized?
       success
     end
+
+    def authenticated_authorized_with_arg?
+      #@arg.present?
+    end
   end
 
   class Authorization < ActiveEntry::Base::Authorization
@@ -24,6 +28,10 @@ module TestPolicy
 
     def authenticated_authorized?
       success
+    end
+
+    def authenticated_authorized_with_arg?
+      @arg.present?
     end
   end
 end

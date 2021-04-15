@@ -6,13 +6,13 @@ module ActiveEntry
       policy::Authorization.pass? action, **args
     end
 
-    def link_to_if_authorized name = nil, options = nil, html_options = nil, &block
+    def link_to_if_authorized name = nil, options = nil, html_options = nil, **args, &block
       url = url_for options
       method = options&.is_a?(Hash) && options[:method] ? options[:method].to_s.upcase : "GET"
 
       recognized_path = Rails.application.routes.recognize_path(url, method: method)
 
-      authorized = authorized_for? recognized_path[:controller], recognized_path[:action]
+      authorized = authorized_for? recognized_path[:controller], recognized_path[:action], **args
       
       link_to name, options, html_options, &block if authorized
     end

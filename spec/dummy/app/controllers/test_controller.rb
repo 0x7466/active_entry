@@ -15,4 +15,9 @@ class TestController < ApplicationController
     pass!
     head :no_content
   end
+
+  def authenticated_authorized_with_arg
+    pass!
+    head :no_content
+  end
 end
