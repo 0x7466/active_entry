@@ -9,7 +9,7 @@ GIT
 PATH
   remote: .
   specs:
-    active_entry (2.0.0)
+    active_entry (2.0.1)
       rails (>= 4.0.0)
 
 GEM
@@ -117,7 +117,7 @@ GEM
     mimemagic (0.3.10)
       nokogiri (~> 1)
       rake
-    mini_mime (1.0.3)
+    mini_mime (1.1.0)
     minitest (5.14.4)
     nenv (0.3.0)
     nio4r (2.5.7)
