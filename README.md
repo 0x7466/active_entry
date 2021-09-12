@@ -297,7 +297,7 @@ You can easily test your policies in RSpec.
 
 We've created some helpers for your tests. Import them first:
 ```ruby
-// spec/support/active_entry.rb
+# spec/support/active_entry.rb
 require "active_entry/rspec"
 ```
 
