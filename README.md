@@ -293,7 +293,15 @@ end
 But you can pass in whatever you want into your error hash.
 
 ## Testing
-You can easily test your policies in RSpec. Let's start with the generator:
+You can easily test your policies in RSpec.
+
+We've created some helpers for your tests. Import them first:
+```ruby
+// spec/support/active_entry.rb
+require "active_entry/rspec"
+```
+
+Now let's start with the generator:
 
 ```shell
 $ rails g rspec:policy Users
